@@ -20,7 +20,7 @@
     "debug": "^4.1.1",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
-    "mongoose": "^5.7.3",
+    "mongoose": "^5.7.5",
     "request": "^2.88.0",
     "telegraf": "^3.32.0",
     "telegraf-inline-menu": "^3.6.2"
