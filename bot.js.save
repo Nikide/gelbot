@@ -1,0 +1,8 @@
+module.exports = {
+  apps : [{
+    name        : "BOT",
+    script      : "./app.js",
+    cron_restart: " * * * *",
+    watch       : true
+  }]
+}
