@@ -15,7 +15,7 @@ let logger = txt => console.log('\x1b[32m%s\x1b[0m', txt);
 let error = txt => console.error('\x1b[31m%s\x1b[0m', txt);
 
 logger(`Запуск...`)
-mongoose.connect('mongodb://niki:Qweasd32@ds063158.mlab.com:63158/gbot2', { useNewUrlParser: true });
+mongoose.connect('mongodb://'+process.env.DB_URL, { useNewUrlParser: true });
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => logger(`БД работает`));
