@@ -133,7 +133,7 @@ let startText = `<b>Warning, this bot can show NSFW content!</b>
 \nHow to use: Send tags like <code>ahegao</code> <code>nude</code> <code>sex</code> or something... Also, you can combine tags in one request. Enjoy!\n
 Check @nikidev for updates!`
 try {
-bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML()))
+//bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML()))
 }catch(e){
     console.log('error');
     
