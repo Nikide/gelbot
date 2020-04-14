@@ -133,7 +133,7 @@ let startText = `<b>Warning, this bot can show NSFW content!</b>
 \nHow to use: Send tags like <code>ahegao</code> <code>nude</code> <code>sex</code> or something... Also, you can combine tags in one request. Enjoy!\n
 Check @nikidev for updates!`
 try {
-//bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML()))
+bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML()))
 }catch(e){
     console.log('error');
     
@@ -188,7 +188,7 @@ bot.on('text', (ctx) => {
 
 bot.action('next', (ctx) => {
     findUser(ctx.chat.id).then(user => {
-        ctx.editMessageCaption(`test`); //Костыль без которого не работает вебхук лол
+       // ctx.editMessageCaption(`test`); //Костыль без которого не работает вебхук лол
         let media = JSON.parse(user.data)
         debug(`gbot:nextAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
         let img = media[user.tick + 1].file_url.toString();
@@ -211,7 +211,7 @@ bot.action('next', (ctx) => {
 })
 bot.action('prev', (ctx) => {
     findUser(ctx.chat.id).then(user => {
-        ctx.editMessageCaption(`retry`);
+       // ctx.editMessageCaption(`retry`);
         let media = JSON.parse(user.data)
         debug(`gbot:prevAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
         let img = media[user.tick - 1].file_url.toString();
@@ -234,7 +234,7 @@ bot.action('prev', (ctx) => {
 })
 bot.action('rand', (ctx) => {
     findUser(ctx.chat.id).then(user => {
-        ctx.editMessageCaption(`retry`); //Я рил хз почему без этого вебхук не работает
+       // ctx.editMessageCaption(`retry`); //Я рил хз почему без этого вебхук не работает
         let media = JSON.parse(user.data)
         let random = Math.floor(Math.random() * media.length);
         updateTick(ctx.chat.id, random) //Чтоб работала иннфа по тегам
@@ -262,7 +262,7 @@ bot.action('rand', (ctx) => {
 })
 
 bot.action('tags', ctx => {
-    ctx.replyWithChatAction('typing')
+   // ctx.replyWithChatAction('typing')
     findUser(ctx.chat.id).then(user => {
         let data = JSON.parse(user.data);
         let tags = data[user.tick].tags.trim().split(/\s+/)
