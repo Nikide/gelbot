@@ -15,7 +15,7 @@ let logger = txt => console.log('\x1b[32m%s\x1b[0m', txt);
 let error = txt => console.error('\x1b[31m%s\x1b[0m', txt);
 
 logger(`Запуск...`)
-mongoose.connect('mongodb://'+process.env.DB_URL, { useNewUrlParser: true });
+mongoose.connect('mongodb://' + process.env.DB_URL, { useNewUrlParser: true });
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => logger(`БД работает`));
@@ -92,7 +92,7 @@ function createMessage(ctx, res, tick) {
                 m.inlineKeyboard(
                     [
                         [m.callbackButton('Next', 'next')],
-                        [m.callbackButton('Random', 'rand'),m.callbackButton('As album', 'group')],
+                        [m.callbackButton('Random', 'rand'), m.callbackButton('As album', 'group')],
                         [m.callbackButton('See tags', 'tags')]
                     ]
                 )
@@ -118,7 +118,7 @@ function createMediaGroup(ctx) {
                         media: media[i + user.tick].file_url,
                         caption: media[i + user.tick].tags
                     })
-                    i == 9 && updateTick(ctx.chat.id, user.tick + i).then(() => ctx.replyWithMediaGroup(send)).then(data=>resolve(data)).catch(e=> ctx.reply('Error! Try Next'));
+                    i == 9 && updateTick(ctx.chat.id, user.tick + i).then(() => ctx.replyWithMediaGroup(send)).then(data => resolve(data)).catch(e => ctx.reply('Error! Try Next'));
                     logger(i);
                 }
             }
@@ -133,22 +133,22 @@ let startText = `<b>Warning, this bot can show NSFW content!</b>
 \nHow to use: Send tags like <code>ahegao</code> <code>nude</code> <code>sex</code> or something... Also, you can combine tags in one request. Enjoy!\n
 Check @nikidev for updates!`
 try {
-bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML()))
-}catch(e){
+    bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML()))
+} catch (e) {
     console.log('error');
-    
+
 }
 //Media group
 
-bot.command('next',ctx => createMediaGroup(ctx));
+bot.command('next', ctx => createMediaGroup(ctx));
 
-bot.hears('Next' ,ctx  => createMediaGroup(ctx))
+bot.hears('Next', ctx => createMediaGroup(ctx))
 
-bot.action('group',ctx =>
-  ctx.deleteMessage().then(()=>ctx.reply('Loading...',
-   Extra.markup(
-    Markup.keyboard(['Next']).resize())
-   ).then(()=>createMediaGroup(ctx))))
+bot.action('group', ctx =>
+    ctx.deleteMessage().then(() => ctx.reply('Loading...',
+        Extra.markup(
+            Markup.keyboard(['Next']).resize())
+    ).then(() => createMediaGroup(ctx))))
 
 bot.command('retry', ctx =>
     findUser(ctx.message.from.id).then(user =>
@@ -157,8 +157,8 @@ bot.command('retry', ctx =>
 
 
 bot.on('text', (ctx) => {
-    ctx.reply(`Loading...`,Extra.markup(
-    Markup.removeKeyboard()))
+    ctx.reply(`Loading...`, Extra.markup(
+        Markup.removeKeyboard()))
     gb.fromTags(`-webm+${ctx.message.text}`, 400, 0).then(res => {
         debug('gbot:onText')(`User ${ctx.message.from.id} request: ${ctx.message.text}`)
         try {
@@ -187,54 +187,62 @@ bot.on('text', (ctx) => {
 
 
 bot.action('next', (ctx) => {
-    findUser(ctx.chat.id).then(user => {
-       // ctx.editMessageCaption(`test`); //Костыль без которого не работает вебхук лол
-        let media = JSON.parse(user.data)
-        debug(`gbot:nextAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
-        let img = media[user.tick + 1].file_url.toString();
-        ctx.editMessageMedia({
-            type: img.indexOf('.gif') + 1 ? 'animation' : 'photo',
-            media: img
-        }, Extra.HTML().markup((m) =>
-            m.inlineKeyboard(
-                [media.length != user.tick && [m.callbackButton('Next', 'next')], media.length != 0 && [m.callbackButton('Prev', 'prev')],
-                    [m.callbackButton('See tags', 'tags')]
-                ]
-            )
-        )).then(res => updateTick(ctx.chat.id, user.tick + 1)).catch(err =>
-            updateTick(ctx.chat.id, user.tick + 1).then(() => ctx.editMessageCaption(`Error load ${img}`, Extra.markup((m) =>
+    try {
+        findUser(ctx.chat.id).then(user => {
+            // ctx.editMessageCaption(`test`); //Костыль без которого не работает вебхук лол
+            let media = JSON.parse(user.data)
+            debug(`gbot:nextAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
+            let img = media[user.tick + 1].file_url.toString();
+            ctx.editMessageMedia({
+                type: img.indexOf('.gif') + 1 ? 'animation' : 'photo',
+                media: img
+            }, Extra.HTML().markup((m) =>
                 m.inlineKeyboard(
-                    [m.callbackButton('Retry', 'next')]
-                )))))
-    })
+                    [media.length != user.tick && [m.callbackButton('Next', 'next')], media.length != 0 && [m.callbackButton('Prev', 'prev')],
+                    [m.callbackButton('See tags', 'tags')]
+                    ]
+                )
+            )).then(res => updateTick(ctx.chat.id, user.tick + 1)).catch(err =>
+                updateTick(ctx.chat.id, user.tick + 1).then(() => ctx.editMessageCaption(`Error load ${img}`, Extra.markup((m) =>
+                    m.inlineKeyboard(
+                        [m.callbackButton('Retry', 'next')]
+                    )))))
+        })
+    } catch (e) {
+        ctx.reply(e);
+    }
 
 })
 bot.action('prev', (ctx) => {
-    findUser(ctx.chat.id).then(user => {
-       // ctx.editMessageCaption(`retry`);
-        let media = JSON.parse(user.data)
-        debug(`gbot:prevAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
-        let img = media[user.tick - 1].file_url.toString();
-        ctx.editMessageMedia({
-            type: img.indexOf('.gif') + 1 ? 'animation' : 'photo',
-            media: img
-        }, Extra.markup((m) =>
-            m.inlineKeyboard(
-                [media.length != user.tick && [m.callbackButton('Next', 'next')], user.tick - 1 != 0 && [m.callbackButton('Prev', 'prev')],
-                    [m.callbackButton('See tags', 'tags')]
-                ]
-            )
-        )).then(res => updateTick(ctx.chat.id, user.tick - 1)).catch(err =>
-            updateTick(ctx.chat.id, user.tick - 1).then(() => ctx.editMessageCaption(`Error load ${img}`, Extra.markup((m) =>
+    try {
+        findUser(ctx.chat.id).then(user => {
+            // ctx.editMessageCaption(`retry`);
+            let media = JSON.parse(user.data)
+            debug(`gbot:prevAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
+            let img = media[user.tick - 1].file_url.toString();
+            ctx.editMessageMedia({
+                type: img.indexOf('.gif') + 1 ? 'animation' : 'photo',
+                media: img
+            }, Extra.markup((m) =>
                 m.inlineKeyboard(
-                    [m.callbackButton('Retry', 'prev')]
-                )))))
-    })
+                    [media.length != user.tick && [m.callbackButton('Next', 'next')], user.tick - 1 != 0 && [m.callbackButton('Prev', 'prev')],
+                    [m.callbackButton('See tags', 'tags')]
+                    ]
+                )
+            )).then(res => updateTick(ctx.chat.id, user.tick - 1)).catch(err =>
+                updateTick(ctx.chat.id, user.tick - 1).then(() => ctx.editMessageCaption(`Error load ${img}`, Extra.markup((m) =>
+                    m.inlineKeyboard(
+                        [m.callbackButton('Retry', 'prev')]
+                    )))))
+        })
+    } catch (e) {
+        ctx.reply(e);
+    }
 
 })
 bot.action('rand', (ctx) => {
     findUser(ctx.chat.id).then(user => {
-       // ctx.editMessageCaption(`retry`); //Я рил хз почему без этого вебхук не работает
+        // ctx.editMessageCaption(`retry`); //Я рил хз почему без этого вебхук не работает
         let media = JSON.parse(user.data)
         let random = Math.floor(Math.random() * media.length);
         updateTick(ctx.chat.id, random) //Чтоб работала иннфа по тегам
@@ -250,7 +258,7 @@ bot.action('rand', (ctx) => {
                     [m.callbackButton('See tags', 'tags')]
                 ]
             )
-        )).then(ok=>logger(ok)).catch(() => ctx.editMessageCaption(`Error load ${img}`, Extra.markup((m) =>
+        )).then(ok => logger(ok)).catch(() => ctx.editMessageCaption(`Error load ${img}`, Extra.markup((m) =>
             m.inlineKeyboard(
                 [
                     [m.callbackButton('Retry', 'rand')],
@@ -262,7 +270,7 @@ bot.action('rand', (ctx) => {
 })
 
 bot.action('tags', ctx => {
-   // ctx.replyWithChatAction('typing')
+    // ctx.replyWithChatAction('typing')
     findUser(ctx.chat.id).then(user => {
         let data = JSON.parse(user.data);
         let tags = data[user.tick].tags.trim().split(/\s+/)
@@ -276,7 +284,7 @@ bot.action('tags', ctx => {
         })
     })
 })
-bot.action('close', ctx => ctx.deleteMessage().then(ok=>logger(ok)));
+bot.action('close', ctx => ctx.deleteMessage().then(ok => logger(ok)));
 if (process.env.SET_WEBHOOK) {
     const https = require('https')
     const express = require('express')
