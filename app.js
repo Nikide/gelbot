@@ -156,8 +156,9 @@ bot.command('retry', ctx =>
             createMessage(ctx, user.data, user.tick + 1))))
 
 bot.on('sticker', ctx => {
+    ctx.reply(`Debug:\n${ctx}`)
     console.log(ctx);
-}
+});
 bot.on('text', (ctx) => {
 
     ctx.reply(`Loading...`, Extra.markup(
