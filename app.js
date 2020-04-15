@@ -156,7 +156,9 @@ bot.command('retry', ctx =>
             createMessage(ctx, user.data, user.tick + 1))))
 
 bot.on('sticker', ctx => {
-    ctx.reply(`Debug:\n${ctx.message.sticker}`)
+    ctx.replyWithSticker(ctx.message.sticker.file_id).then(() =>
+        ctx.reply(`Debug:\n${ctx.message.sticker.file_id}`))
+
     console.log(ctx.message.sticker);
 });
 bot.on('text', (ctx) => {
