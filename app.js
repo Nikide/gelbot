@@ -123,7 +123,7 @@ function createMediaGroup(ctx) {
                 }
             }
         } catch {
-            ctx.reply(`Error:Out of images`)
+            ctx.reply(`Бот сломался лол`)
         }
 
     }))
