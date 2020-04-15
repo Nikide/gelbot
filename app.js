@@ -184,7 +184,7 @@ bot.on('sticker', ctx => {
     console.log(ctx.message.sticker);
 });
 bot.on('text', (ctx) => {
-    ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)]).then(() =>]
+    ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)]).then(() =>
         ctx.reply(`Uh... Finding hentai media for you UwU`, Extra.markup(
             Markup.removeKeyboard())))
 
