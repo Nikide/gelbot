@@ -155,8 +155,11 @@ bot.command('retry', ctx =>
         updateTick(ctx.message.from.id, user.tick + 1).then(() =>
             createMessage(ctx, user.data, user.tick + 1))))
 
-
+bot.on('sticker', ctx => {
+    console.log(ctx);
+}
 bot.on('text', (ctx) => {
+
     ctx.reply(`Loading...`, Extra.markup(
         Markup.removeKeyboard()))
     gb.fromTags(`-webm+${ctx.message.text}`, 400, 0).then(res => {
