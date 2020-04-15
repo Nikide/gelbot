@@ -167,10 +167,11 @@ bot.command('next', ctx => createMediaGroup(ctx));
 bot.hears('Next', ctx => createMediaGroup(ctx))
 
 bot.action('group', ctx =>
-    ctx.deleteMessage().then(() => ctx.reply('Loading...',
-        Extra.markup(
-            Markup.keyboard(['Next']).resize())
-    ).then(() => createMediaGroup(ctx))))
+    ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)]).then(() =>
+        ctx.reply('Generating a lot of hentai stuff, pervert.\nPlease, wait OwO',
+            Extra.markup(
+                Markup.keyboard(['Next']).resize())
+        ).then(() => createMediaGroup(ctx))))
 
 bot.command('retry', ctx =>
     findUser(ctx.message.from.id).then(user =>
