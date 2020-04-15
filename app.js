@@ -128,7 +128,29 @@ function createMediaGroup(ctx) {
 
     }))
 }
-
+/**
+ * Send Sticker With Text
+ * @param {*} ctx Context
+ * @param {*} sticker - sticker id
+ * @param {*} text - message
+ */
+function sendSWT(ctx, sticker, text) {
+    return new Promise((resolve, reject) =>
+        ctx.replyWithSticker(sticker).then(() =>
+            ctx.reply(text)
+                .then(out => resolve(out))
+                .catch(err => reject(err))
+        ))
+}
+let loadingSticker = ['CAACAgIAAxkBAAEbM2heltcIdcUlSkCCagf6F5M3ixv8GAACgQIAArzR-Qt7Tmfu3izz7BgE',
+    'CAACAgIAAxkBAAEbM2xeltcPJUUaq0n42wcKXeExBGwdqgACGAIAArzR-QvSNOGI3IAF8RgE',
+    'CAACAgIAAxkBAAEbM3VeltcZRf177IZz4fsPMG3unhxYjQAClgEAArzR-QvOXIZehxnEcxgE',
+    'CAACAgIAAxkBAAEbM3teltcoLLomLmyUn_FfOazQirbHwAAC-AcAArcKFwABuhd1LvaG8twYBA',
+    'CAACAgQAAxkBAAEbM4Reltc4e5Rz4v_eSAAB83Fvpt_37LIAAtgAAzjhGgABCY8AARUXzkJ6GAQ',
+    'CAACAgIAAxkBAAEbM4peltdO4FSQAAGA__3PE5dINVR9icIAAkMIAALZJDgF4N717T95djgYBA',
+    'CAACAgIAAxkBAAEbM5Beltdayw15CdZHIUFZrnFxziidugACpAkAAtkkOAXaL3picxckMxgE',
+    'CAACAgQAAxkBAAEbM5Zeltdw6QyA2Jjo9qMKorujeY3gAAMwBQACo46_AAEQisqLIZGDXBgE'
+]
 let startText = `<b>Warning, this bot can show NSFW content!</b>
 \nHow to use: Send tags like <code>ahegao</code> <code>nude</code> <code>sex</code> or something... Also, you can combine tags in one request. Enjoy!\n
 Check @nikidev for updates!`
@@ -162,9 +184,10 @@ bot.on('sticker', ctx => {
     console.log(ctx.message.sticker);
 });
 bot.on('text', (ctx) => {
+    ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)]).then(() =>]
+        ctx.reply(`Uh... Finding hentai media for you UwU`, Extra.markup(
+            Markup.removeKeyboard())))
 
-    ctx.reply(`Loading...`, Extra.markup(
-        Markup.removeKeyboard()))
     gb.fromTags(`-webm+${ctx.message.text}`, 400, 0).then(res => {
         debug('gbot:onText')(`User ${ctx.message.from.id} request: ${ctx.message.text}`)
         try {
