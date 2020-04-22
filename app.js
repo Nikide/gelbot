@@ -86,8 +86,10 @@ function createMessage(ctx, res, tick) {
     return new Promise((reslove, reject) => {
         let data = JSON.parse(res)
         debug('gbot:createMessage')(`For ${ctx.message.from.id} with media ${data[tick ? tick : 0].file_url} has TICK ${tick}`)
+        console.log(data[tick ? tick : 0])
+        let sample = `https://img2.gelbooru.com/samples/${data[tick ? tick : 0].directory}/sample_${data[tick ? tick : 0].hash}.jpg`
         ctx.replyWithPhoto(
-            data[tick ? tick : 0].file_url,
+            data[tick ? tick : 0].sample == 0 ? data[tick ? tick : 0].file_url : sample,
             data.length != 0 && Extra.markup((m) =>
                 m.inlineKeyboard(
                     [
@@ -103,6 +105,7 @@ function createMessage(ctx, res, tick) {
 
 function createMediaGroup(ctx) {
     return new Promise(resolve => findUser(ctx.chat.id).then(user => {
+        ctx.reply('Please, wait. This may take several seconds...')
         try {
             let media = JSON.parse(user.data)
             let send = [];
@@ -113,11 +116,15 @@ function createMediaGroup(ctx) {
                     continue;
 
                 } else {
-                    send.push({
-                        type: media[i + user.tick].file_url.indexOf('.gif') + 1 ? 'video' : 'photo',
-                        media: media[i + user.tick].file_url,
-                        caption: media[i + user.tick].tags
-                    })
+                    let sample = `https://img2.gelbooru.com/samples/${media[i + user.tick].directory}/sample_${media[i + user.tick].hash}.jpg`
+                    media[i + user.tick].file_url.indexOf('.webm') + 1 == 0 &&
+                        send.push({
+                            type: media[i + user.tick].file_url.indexOf('.gif') + 1 ? 'video' : 'photo',
+                            media: media[i + user.tick].sample == 0 && !media[i + user.tick].file_url.toString().indexOf('.gif') + 1 ? media[i + user.tick].file_url.toString() : sample,
+                            //caption: media[i + user.tick].tags
+                        })
+                    console.log(media[i + user.tick]);
+
                     i == 9 && updateTick(ctx.chat.id, user.tick + i).then(() => ctx.replyWithMediaGroup(send)).then(data => resolve(data)).catch(e => ctx.reply('Error! Try Next'));
                     logger(i);
                 }
@@ -154,12 +161,9 @@ let loadingSticker = ['CAACAgIAAxkBAAEbM2heltcIdcUlSkCCagf6F5M3ixv8GAACgQIAArzR-
 let startText = `<b>Warning, this bot can show NSFW content!</b>
 \nHow to use: Send tags like <code>ahegao</code> <code>nude</code> <code>sex</code> or something... Also, you can combine tags in one request. Enjoy!\n
 Check @nikidev for updates!`
-try {
-    bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML()))
-} catch (e) {
-    console.log('error');
 
-}
+bot.command(['start', 'help'], ctx => ctx.reply(startText, Extra.HTML())).catch(e => console.log(e))
+
 //Media group
 
 bot.command('next', ctx => createMediaGroup(ctx));
@@ -168,7 +172,7 @@ bot.hears('Next', ctx => createMediaGroup(ctx))
 
 bot.action('group', ctx =>
     ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)]).then(() =>
-        ctx.reply('Generating a lot of hentai stuff, pervert.\nPlease, wait OwO',
+        ctx.reply('Loading...',
             Extra.markup(
                 Markup.keyboard(['Next']).resize())
         ).then(() => createMediaGroup(ctx))))
@@ -185,26 +189,41 @@ bot.on('sticker', ctx => {
     console.log(ctx.message.sticker);
 });
 bot.on('text', (ctx) => {
-    ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)]).then(() =>
-        ctx.reply(`Uh... Finding hentai media for you UwU`, Extra.markup(
-            Markup.removeKeyboard())))
-
-    gb.fromTags(`-webm+${ctx.message.text}`, 400, 0).then(res => {
+    let searchText = `Loading`;
+    let messageId = null;
+    let progress = text => messageId != null ? bot.telegram.editMessageText(
+        ctx.message.from.id,
+        messageId,
+        null,
+        `${searchText} ${text}`
+    ) : console.log('null')
+    ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)], Extra.markup(
+        Markup.removeKeyboard())).then(() =>
+            ctx.reply(searchText + ' ▁▁▁▁▁▁▁▁▁▁▁▁▁ 0%').then(
+                mi => {
+                    messageId = mi.message_id
+                }
+            ))
+    progress('█▁▁▁▁▁▁▁▁▁ 10%')
+    gb.fromTags(`-webm ${ctx.message.text}`, 400, 0).then(res => {
+        progress('██████▁▁▁▁▁▁ 50%')
         debug('gbot:onText')(`User ${ctx.message.from.id} request: ${ctx.message.text}`)
         try {
             let test = JSON.parse(res);
             checkUser(ctx.message.from.id).then(is => {
+                progress('█████████▁ 90%')
                 if (is) {
                     updateSearch(ctx.message.from.id, ctx.message.text, res, 0).then(to =>
-                        ctx.replyWithChatAction('upload_photo').then(() => createMessage(ctx, res)).catch(e => debug('gbot:err')(e)))
+                        ctx.replyWithChatAction('upload_photo').then(() => createMessage(ctx, res)).then(() => progress('██████████ 100%')).catch(e => debug('gbot:err')(e)))
                 } else {
                     createUser(ctx.message.from.id, ctx.message.text, 0, res, 0, 0).then(to =>
-                        ctx.replyWithChatAction('upload_photo').then(() => createMessage(ctx, res)).catch(e => debug('gbot:err')(e)))
+                        ctx.replyWithChatAction('upload_photo').then(() => createMessage(ctx, res)).then(() => progress('██████████ 100%')).catch(e => debug('gbot:err')(e)))
                 }
 
             }).catch(err => error(err))
         } catch (e) {
-            ctx.reply(`<b>Not found</b>\nCheck your request. Also, you can send <code>*</code>  if you don't know what you need`, Extra.HTML())
+
+            progress(`██████████ 100%\n❌Not found❌\nCheck your request. Also, you can send *  if you don't know what you need`)
         }
 
 
@@ -222,7 +241,9 @@ bot.action('next', (ctx) => {
             // ctx.editMessageCaption(`test`); //Костыль без которого не работает вебхук лол
             let media = JSON.parse(user.data)
             debug(`gbot:nextAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
-            let img = media[user.tick + 1].file_url.toString();
+            let sample = `https://img2.gelbooru.com/samples/${media[user.tick + 1].directory}/sample_${media[user.tick + 1].hash}.jpg`
+            let img = media[user.tick + 1].sample == 0 && !media[user.tick + 1].file_url.toString().indexOf('.gif') + 1 ? media[user.tick + 1].file_url.toString() : sample;
+            console.log(media[user.tick + 1])
             ctx.editMessageMedia({
                 type: img.indexOf('.gif') + 1 ? 'animation' : 'photo',
                 media: img
@@ -249,7 +270,8 @@ bot.action('prev', (ctx) => {
             // ctx.editMessageCaption(`retry`);
             let media = JSON.parse(user.data)
             debug(`gbot:prevAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
-            let img = media[user.tick - 1].file_url.toString();
+            let sample = `https://img2.gelbooru.com/samples/${media[user.tick - 1].directory}/sample_${media[user.tick - 1].hash}.jpg}`
+            let img = media[user.tick - 1].sample == 0 && !media[user.tick - 1].file_url.toString().indexOf('.gif') + 1 ? media[user.tick - 1].file_url.toString() : sample;
             ctx.editMessageMedia({
                 type: img.indexOf('.gif') + 1 ? 'animation' : 'photo',
                 media: img
@@ -276,7 +298,8 @@ bot.action('rand', (ctx) => {
         let media = JSON.parse(user.data)
         let random = Math.floor(Math.random() * media.length);
         updateTick(ctx.chat.id, random) //Чтоб работала иннфа по тегам
-        let img = media[random].file_url.toString();
+        let sample = `https://img2.gelbooru.com/samples/${media[random].directory}/sample_${media[random].hash}.jpg`
+        let img = media[random].sample == 0 && !media[random].file_url.toString().indexOf('.gif') + 1 ? media[random].file_url.toString() : sample;
         debug(`gbot:randAction`)(`Next action for ${ctx.chat.id} with media ${media[user.tick + 1].file_url} and TICK ${user.tick}`)
         ctx.editMessageMedia({
             type: img.indexOf('.gif') + 1 ? 'animation' : 'photo',
