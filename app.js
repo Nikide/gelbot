@@ -105,7 +105,7 @@ function createMessage(ctx, res, tick) {
 
 function createMediaGroup(ctx) {
     return new Promise(resolve => findUser(ctx.chat.id).then(user => {
-        ctx.reply('Please, wait. This may take several seconds...')
+        // ctx.reply('Please, wait. This may take several seconds...')
         try {
             let media = JSON.parse(user.data)
             let send = [];
@@ -125,7 +125,7 @@ function createMediaGroup(ctx) {
                         })
                     console.log(media[i + user.tick]);
 
-                    i == 9 && updateTick(ctx.chat.id, user.tick + i).then(() => ctx.replyWithMediaGroup(send)).then(data => resolve(data)).catch(e => ctx.reply('Error! Try Next'));
+                    i == 9 && updateTick(ctx.chat.id, user.tick + i).then(() => ctx.replyWithMediaGroup(send)).then(data => resolve(data)).catch(e => ctx.reply('Error'));
                     logger(i);
                 }
             }
@@ -171,23 +171,22 @@ bot.command('next', ctx => createMediaGroup(ctx));
 bot.hears('Next', ctx => createMediaGroup(ctx))
 
 bot.action('group', ctx =>
-    ctx.replyWithSticker(loadingSticker[Math.floor(Math.random() * 6)]).then(() =>
-        ctx.reply('Loading...',
-            Extra.markup(
-                Markup.keyboard(['Next']).resize())
-        ).then(() => createMediaGroup(ctx))))
+    ctx.reply('Please, wait. This may take several seconds...',
+        Extra.markup(
+            Markup.keyboard(['Next']).resize())
+    ).then(() => createMediaGroup(ctx)))
 
 bot.command('retry', ctx =>
     findUser(ctx.message.from.id).then(user =>
         updateTick(ctx.message.from.id, user.tick + 1).then(() =>
             createMessage(ctx, user.data, user.tick + 1))))
 
-bot.on('sticker', ctx => {
+/*bot.on('sticker', ctx => {
     ctx.replyWithSticker(ctx.message.sticker.file_id).then(() =>
         ctx.reply(`Debug:\n${ctx.message.sticker.file_id}`))
 
     console.log(ctx.message.sticker);
-});
+});*/
 bot.on('text', (ctx) => {
     let searchText = `Loading`;
     let messageId = null;
