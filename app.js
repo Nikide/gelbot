@@ -94,7 +94,7 @@ function createMessage(ctx, res, tick) {
                 m.inlineKeyboard(
                     [
                         [m.callbackButton('Next', 'next')],
-                        [m.callbackButton('Random', 'rand'), m.callbackButton('As album', 'group')],
+                        [m.callbackButton('Random', 'rand')/*, m.callbackButton('As album', 'group')*/],
                         [m.callbackButton('See tags', 'tags')]
                     ]
                 )
