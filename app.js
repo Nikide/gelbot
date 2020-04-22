@@ -104,7 +104,7 @@ function createMessage(ctx, res, tick) {
 }
 
 function createMediaGroup(ctx) {
-    return new Promise(resolve => findUser(ctx.chat.id).then(user => {
+   /* return new Promise(resolve => findUser(ctx.chat.id).then(user => {
         // ctx.reply('Please, wait. This may take several seconds...')
         try {
             let media = JSON.parse(user.data)
@@ -133,7 +133,7 @@ function createMediaGroup(ctx) {
             ctx.reply(`Бот сломался лол`)
         }
 
-    }))
+    }))*/
 }
 /**
  * Send Sticker With Text
@@ -370,7 +370,7 @@ if (process.env.SET_WEBHOOK) {
     }).then((res) => { logger(`Бот работает WH`) })*/
 
 } else {
-    bot.launch().then(() => { logger(`Бот работает LP`) })
+    bot.startPolling(10000,50)
 }
 //gb.fromTags(`loli`,2,0).then(res => console.log(res));
 //---------
